@@ -2,8 +2,9 @@
   "name": "ascii-world",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
+    "start": "node app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [
@@ -13,6 +14,7 @@
   "license": "ISC",
   "dependencies": {
     "aalib.js": "git+https://github.com/mir3z/aalib.js.git",
-    "express": "^4.16.4"
+    "express": "^4.16.4",
+    "rxjs": "^6.3.3"
   }
 }
