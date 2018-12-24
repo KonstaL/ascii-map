@@ -1,0 +1,28 @@
+patch-package
+--- a/node_modules/asciify-image/index.js
++++ b/node_modules/asciify-image/index.js
+@@ -7,7 +7,7 @@ var Jimp = require('jimp'),
+ 
+ // Set of basic characters ordered by increasing "darkness"
+ // Used as pixels in the ASCII image
+-var chars = ' .,:;i1tfLCG08@',
++var chars = `MNFV|*:.`,
+     num_c = chars.length - 1;
+ 
+ module.exports = function (path, second, third) {
+@@ -82,7 +82,7 @@ var asciify_core = function(path, opts, callback) {
+     if (!options.as_string) ascii = [];
+ 
+     // Normalization for the returned intensity so that it maps to a char
+-    var norm  = (255 * 4 / num_c);
++    var norm  = (255 * 3 / num_c);
+ 
+     // Get and convert pixels
+     var i, j, c;
+@@ -181,5 +181,5 @@ var calculate_dims = function (img, opts) {
+  */
+ var intensity = function (i, x, y) {
+   var color = Jimp.intToRGBA(i.getPixelColor(x, y));
+-  return color.r + color.g + color.b + color.a;
++  return color.r + color.g + (color.b);
+ }
