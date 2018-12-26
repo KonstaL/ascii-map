@@ -2,6 +2,8 @@ const express = require('express')
 const fetch = require('node-fetch');
 const app = express()
 const port = 3000
+const charsPerTile = 32;
+const tileSize = 256;
 
 var asciify = require('asciify-image');
 const { createCanvas, loadImage } = require('canvas')
@@ -9,14 +11,16 @@ const { createCanvas, loadImage } = require('canvas')
 const baseUrl = `https://b.tile.openstreetmap.org/`;
 //const baseUrl = `http://c.tiles.wmflabs.org/osm-no-labels/`
 
-const options = {
+const asciifyOptions = {
     color: false,
     fit:  'box',
-    width: 32,
-    height: 32
+    width: charsPerTile,
+    height: charsPerTile
 }
 
-const canvas = createCanvas(256, 256)
+const isDarkMode = true;
+
+const canvas = createCanvas(tileSize, tileSize)
 const ctx = canvas.getContext('2d')
 
 
@@ -24,29 +28,29 @@ const ctx = canvas.getContext('2d')
 app.get('/map/:z/:x/:y', (req, res) => {
     fetch(`${baseUrl}/${req.params.z}/${req.params.x}/${req.params.y}.png`)
         .then(res => res.arrayBuffer())
-        .then(arrayBuffer => asciify(Buffer.from(arrayBuffer), options)) 
+        .then(arrayBuffer => asciify(Buffer.from(arrayBuffer), asciifyOptions)) 
         .then(asciified => {
             // Clear canvas
-            ctx.fillStyle = "#000000";
+            ctx.fillStyle = isDarkMode ? "#000000" : "#FFFFFF";
             ctx.fillRect(0, 0, canvas.width, canvas.height)
 
-            // TODO: Figure out a way to scale text to y-axis
-            ctx.save();
-            ctx.scale(1, 1.04);
+            const textRows = asciified.split('\n');
 
-
-            //Draw chars
+            //setup monospaced font
             ctx.font = '6.8px Courier New, Courier, monospace';
-            ctx.fillStyle = "#FFFFFF";
+            ctx.fillStyle = isDarkMode ? "#FFFFFF" : "#000000";
             ctx.textBaseline = 'top';
-            ctx.fillText(asciified, 0, -1, 256); 
 
+            // Draw the rows
+            for (let i = 0; i < textRows.length; i++) {
+                ctx.fillText(textRows[i], 0, (tileSize/asciifyOptions.width)*i, tileSize+1); 
+            }
 
+            // Respong with an png image
             canvas.toBuffer((err, result) => {
                 const buffer = result;
                 res.contentType('image/png');
                 res.end(buffer, 'binary');
-                ctx.restore();
             })
         })
         .catch(err => console.log(err))
