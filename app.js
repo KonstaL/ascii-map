@@ -1,14 +1,13 @@
 const express = require('express')
-var asciify = require('asciify-image');
+const asciify = require('asciify-image');
+const { createCanvas, loadImage} = require('canvas')
+const setupExceptionHandlers = require('./exceptionCatchers');
 
 const fetch = require('node-fetch');
-const app = express()
-const port = 4444
+const app = express();
+const port = 4444;
 const charsPerTile = 32;
 const tileSize = 256;
-
-const { createCanvas} = require('canvas')
-
 
 const baseUrl = `https://b.tile.openstreetmap.org/`;
 //const baseUrl = `http://c.tiles.wmflabs.org/osm-no-labels/`
@@ -21,13 +20,17 @@ const asciifyOptions = {
 }
 
 const isDarkMode = true;
+setupExceptionHandlers();
 
-const canvas = createCanvas(tileSize, tileSize)
-const ctx = canvas.getContext('2d')
+const canvas = createCanvas(tileSize, tileSize);
+let ctx;
+// for some reason the server crashes if this is done instantly
+setTimeout(() => ctx = canvas.getContext('2d'), 500);
 
 
 
 app.get('/map/:z/:x/:y', (req, res) => {
+
     fetch(`${baseUrl}/${req.params.z}/${req.params.x}/${req.params.y}.png`)
         .then(res => res.arrayBuffer())
         .then(arrayBuffer => asciify(Buffer.from(arrayBuffer), asciifyOptions)) 
@@ -62,17 +65,3 @@ app.use(express.static('public'))
 
 app.listen(port, () => console.log(`Ascii world listening on port ${port}!`))
 
-
-
-process.on('uncaughtException', function (exception) {
-    console.log('Uncaught exception' ,exception); 
-});
-
-process.on('unhandledRejection', (reason, p) => {
-    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
-});
-
-process.on('SIGINT', function() {
-    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
-    process.exit(1);
-})
