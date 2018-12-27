@@ -1,12 +1,14 @@
 const express = require('express')
+var asciify = require('asciify-image');
+
 const fetch = require('node-fetch');
 const app = express()
-const port = 3000
+const port = 4444
 const charsPerTile = 32;
 const tileSize = 256;
 
-var asciify = require('asciify-image');
-const { createCanvas, loadImage } = require('canvas')
+const { createCanvas} = require('canvas')
+
 
 const baseUrl = `https://b.tile.openstreetmap.org/`;
 //const baseUrl = `http://c.tiles.wmflabs.org/osm-no-labels/`
@@ -59,3 +61,18 @@ app.get('/map/:z/:x/:y', (req, res) => {
 app.use(express.static('public'))
 
 app.listen(port, () => console.log(`Ascii world listening on port ${port}!`))
+
+
+
+process.on('uncaughtException', function (exception) {
+    console.log('Uncaught exception' ,exception); 
+});
+
+process.on('unhandledRejection', (reason, p) => {
+    console.log("Unhandled Rejection at: Promise ", p, " reason: ", reason);
+});
+
+process.on('SIGINT', function() {
+    console.log( "\nGracefully shutting down from SIGINT (Ctrl-C)" );
+    process.exit(1);
+})
